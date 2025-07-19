@@ -18,7 +18,7 @@ public class PlayerGrind : MonoBehaviour
 
     [Header("Variables")]
     public bool onRail;
-    [SerializeField] float grindSpeed;
+    [SerializeField] float grindSpeed = 20f;
     float heightOffset;
     float timeForFullSpline;
     float elapsedRailTime; // TRAVEL TIME ON RAIL; DO NOT USE FOR SCORE
