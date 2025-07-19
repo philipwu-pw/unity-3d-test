@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEngine.InputSystem;
 using UnityEngine.Splines;
+using UnityEngine.SocialPlatforms.Impl;
 
 // https://github.com/SGTADMAN/RailGrind
 
@@ -20,18 +21,24 @@ public class PlayerGrind : MonoBehaviour
     [SerializeField] float grindSpeed;
     float heightOffset;
     float timeForFullSpline;
-    float elapsedTime;
+    float elapsedRailTime; // TRAVEL TIME ON RAIL; DO NOT USE FOR SCORE
+    float elapsedScoreTime; // DELTA TIME ON RAIL; USE FOR SCORE
+    float prevScoreTime; // PREV. DELTA TIME ON RAIL; USE FOR SCOREq
     [SerializeField] float lerpSpeed = 10f;
 
-    [Header("Scripts")]
+    [Header("Scripts")] 
     [SerializeField] RailScript currentRailScript;
+    PlayerScore playerScore;
     Rigidbody playerRigidbody;
-    CharacterController charController;
 
     private void Start()
     {
+        playerScore = GetComponent<PlayerScore>();
         playerRigidbody = GetComponent<Rigidbody>();
         heightOffset = 0; // gameObject.GetComponent<Collider>().bounds.size.y / 2;
+
+        elapsedScoreTime = 0;
+        prevScoreTime = 0;
     }
     public void HandleJump(InputAction.CallbackContext context)
     {
@@ -46,7 +53,6 @@ public class PlayerGrind : MonoBehaviour
     {
         if (onRail) //If on the rail, move the player along the rail
         {
-            Debug.Log("Sigma sigma");
             MovePlayerAlongRail();
         }
     }
@@ -54,6 +60,7 @@ public class PlayerGrind : MonoBehaviour
     {
 
     }
+
     void MovePlayerAlongRail()
     {
 
@@ -61,7 +68,9 @@ public class PlayerGrind : MonoBehaviour
         {
             //Calculate a 0 to 1 normalised time value which is the progress along the rail.
             //Elapsed time divided by the full time needed to traverse the spline will give you that value.
-            float progress = elapsedTime / timeForFullSpline;
+            float progress = elapsedRailTime / timeForFullSpline;
+
+            playerScore.UpdateScore(Math.Abs(elapsedScoreTime-prevScoreTime) * 100);
 
             //If progress is less than 0, the player's position is before the start of the rail.
             //If greater than 1, their position is after the end of the rail.
@@ -79,9 +88,9 @@ public class PlayerGrind : MonoBehaviour
             //current elapsed time.
             float nextTimeNormalised;
             if (currentRailScript.travelDir)
-                nextTimeNormalised = (elapsedTime + Time.deltaTime) / timeForFullSpline;
+                nextTimeNormalised = (elapsedRailTime + Time.deltaTime) / timeForFullSpline;
             else
-                nextTimeNormalised = (elapsedTime - Time.deltaTime) / timeForFullSpline;
+                nextTimeNormalised = (elapsedRailTime - Time.deltaTime) / timeForFullSpline;
 
             //Calculating the local positions of the player's current position and next position
             //using current progress and the progress for the next update.
@@ -103,14 +112,17 @@ public class PlayerGrind : MonoBehaviour
             transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.FromToRotation(transform.up, up) * transform.rotation, lerpSpeed * Time.deltaTime);
 
             //Finally incrementing or decrementing elapsed time for the next update based on direction.
+            prevScoreTime = elapsedScoreTime;
+            elapsedScoreTime += Time.deltaTime;
+
             if (currentRailScript.travelDir)
-                elapsedTime += Time.deltaTime;
+                elapsedRailTime += Time.deltaTime;
             else
-                elapsedTime -= Time.deltaTime;
+                elapsedRailTime -= Time.deltaTime;
         }
     }
 
-    void OnCollisionEnter(Collision collision)
+    void OnCollisionEnter(Collision collision) // OnCollisionEnter is required to prevent score breaking (ensure correct elapsedScoreTime)
     {
         if (collision.gameObject.CompareTag("Rail"))
         {
@@ -118,6 +130,8 @@ public class PlayerGrind : MonoBehaviour
              *rail script of the rail the player hits. Then we calculate the player's position on that rail.
             */
             onRail = true;
+            elapsedScoreTime = Time.deltaTime;
+            prevScoreTime = Time.deltaTime;
             currentRailScript = collision.gameObject.GetComponent<RailScript>();
             CalculateAndSetRailPosition();
         }
@@ -134,7 +148,7 @@ public class PlayerGrind : MonoBehaviour
         //The 0 to 1 value of the player's position on the spline. We also get the world position of where that
         //point is.
         float normalisedTime = currentRailScript.CalculateTargetRailPoint(transform.position, out splinePoint);
-        elapsedTime = timeForFullSpline * normalisedTime;
+        elapsedRailTime = timeForFullSpline * normalisedTime;
         //Multiply the full time for the spline by the normalised time to get elapsed time. This will be used in
         //the movement code.
 
@@ -154,5 +168,9 @@ public class PlayerGrind : MonoBehaviour
         onRail = false;
         currentRailScript = null;
         transform.position += transform.forward * 1;
+
+        //Reset time-count for scores
+        elapsedScoreTime = 0;
+        prevScoreTime = 0;
     }
 }

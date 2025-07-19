@@ -51,6 +51,8 @@ public class PlayerMovement : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (!grindScript.onRail)
+        { // controls for when on ground
             cameraForward = freeCamera.transform.forward;
             cameraRight = freeCamera.transform.right;
 
@@ -70,6 +72,6 @@ public class PlayerMovement : MonoBehaviour
             {
                 rb.AddForce(Vector3.up * jumpHeight, ForceMode.Impulse);
             }
-        
+        }
     }
 }
