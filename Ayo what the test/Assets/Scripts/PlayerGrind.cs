@@ -44,11 +44,13 @@ public class PlayerGrind : MonoBehaviour
     {
         jump = Convert.ToBoolean(context.ReadValue<float>());
     }
+    
     public void HandleMovement(InputAction.CallbackContext context)
     {
         Vector2 rawInput = context.ReadValue<Vector2>();
         input.x = rawInput.x;
     }
+
     private void FixedUpdate()
     {
         if (onRail) //If on the rail, move the player along the rail
@@ -56,6 +58,7 @@ public class PlayerGrind : MonoBehaviour
             MovePlayerAlongRail();
         }
     }
+
     private void Update()
     {
 

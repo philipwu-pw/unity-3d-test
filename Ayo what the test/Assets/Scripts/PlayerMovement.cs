@@ -7,12 +7,12 @@ using UnityEngine.SceneManagement;
 public class PlayerMovement : MonoBehaviour
 {
     public GameObject freeCamera;
-    public float movementSpeed = 15;
+    public float movementSpeed = 15f;
     public float jumpHeight = 10;
     private Rigidbody rb;
     public PlayerInputActions playerControls;
-    private InputAction move;
-    private InputAction jump;
+    private Vector2 moveInput;
+    private float jumpInput;
     private Vector2 directionInput;
     private Vector3 moveDirection;
     private Vector3 cameraForward;
@@ -24,11 +24,12 @@ public class PlayerMovement : MonoBehaviour
     private void Awake()
     {
         playerControls = new PlayerInputActions();
+        playerControls.Enable();
     }
 
     private void OnEnable()
     {
-        playerControls.Enable();
+
     }
 
     private void OnDisable()
@@ -36,10 +37,18 @@ public class PlayerMovement : MonoBehaviour
         playerControls.Disable();
     }
 
+    private void OnMove(InputValue val)
+    {
+        moveInput = val.Get<Vector2>();
+    }
+
+    private void OnJump(InputValue val)
+    {
+        jumpInput = val.Get<float>();
+    }
+
     void Start()
     {
-        move = playerControls.Player.Move;
-        jump = playerControls.Player.Jump;
         rb = GetComponent<Rigidbody>();
         grindScript = GetComponent<PlayerGrind>();
     }
@@ -61,9 +70,8 @@ public class PlayerMovement : MonoBehaviour
 
             cameraForward.Normalize();
             cameraRight.Normalize();
-            
-            directionInput = move.ReadValue<Vector2>();
-            moveDirection = (directionInput.x * cameraRight) + (directionInput.y * cameraForward); // calc for direction of movement 
+
+            moveDirection = (moveInput.x * cameraRight) + (moveInput.y * cameraForward); // calc for direction of movement 
             transform.LookAt(new Vector3(moveDirection.x, 0, moveDirection.z) + transform.position); // look in direction
 
             rb.linearVelocity = new Vector3(moveDirection.x * movementSpeed, rb.linearVelocity.y, moveDirection.z * movementSpeed);
