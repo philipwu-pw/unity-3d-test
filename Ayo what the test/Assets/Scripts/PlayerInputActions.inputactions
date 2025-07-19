@@ -85,6 +85,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Spray",
+                    "type": "Button",
+                    "id": "b7d48471-ef29-43e2-bf34-f6dcda9ca617",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -470,6 +479,17 @@
                     "processors": "",
                     "groups": "Keyboard&Mouse",
                     "action": "Crouch",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "8551804e-d8d4-4dd6-b383-d20a0041f186",
+                    "path": "",
+                    "interactions": "Hold",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Spray",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

@@ -7,8 +7,8 @@ using UnityEngine.SceneManagement;
 public class PlayerMovement : MonoBehaviour
 {
     public GameObject freeCamera;
-    public float movementSpeed;
-    public float jumpHeight;
+    public float movementSpeed = 15;
+    public float jumpHeight = 10;
     private Rigidbody rb;
     public PlayerInputActions playerControls;
     private InputAction move;
@@ -17,6 +17,9 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 moveDirection;
     private Vector3 cameraForward;
     private Vector3 cameraRight;
+
+    // mental illness variables
+    PlayerGrind grindScript;
 
     private void Awake()
     {
@@ -38,31 +41,35 @@ public class PlayerMovement : MonoBehaviour
         move = playerControls.Player.Move;
         jump = playerControls.Player.Jump;
         rb = GetComponent<Rigidbody>();
+        grindScript = GetComponent<PlayerGrind>();
     }
 
     void Update()
     {
-        cameraForward = freeCamera.transform.forward;
-        cameraRight = freeCamera.transform.right;
-
-        cameraForward.y = 0;
-        cameraRight.y = 0;
-
-        cameraForward.Normalize();
-        cameraRight.Normalize();
-
-        directionInput = move.ReadValue<Vector2>();
-        moveDirection = (directionInput.x * cameraRight) + (directionInput.y * cameraForward);
-        transform.LookAt(new Vector3(moveDirection.x, 0, moveDirection.z) + transform.position);
+        
     }
 
     void FixedUpdate()
     {
-        rb.linearVelocity = new Vector3(moveDirection.x * movementSpeed, rb.linearVelocity.y, moveDirection.z * movementSpeed);
+            cameraForward = freeCamera.transform.forward;
+            cameraRight = freeCamera.transform.right;
 
-        if (playerControls.Player.Jump.triggered && Mathf.Abs(rb.linearVelocity.y) < 1f)
-        {
-            rb.AddForce(Vector3.up * jumpHeight, ForceMode.Impulse);
-        }
+            cameraForward.y = 0;
+            cameraRight.y = 0;
+
+            cameraForward.Normalize();
+            cameraRight.Normalize();
+            
+            directionInput = move.ReadValue<Vector2>();
+            moveDirection = (directionInput.x * cameraRight) + (directionInput.y * cameraForward); // calc for direction of movement 
+            transform.LookAt(new Vector3(moveDirection.x, 0, moveDirection.z) + transform.position); // look in direction
+
+            rb.linearVelocity = new Vector3(moveDirection.x * movementSpeed, rb.linearVelocity.y, moveDirection.z * movementSpeed);
+
+            if (playerControls.Player.Jump.triggered && Mathf.Abs(rb.linearVelocity.y) < 1f)
+            {
+                rb.AddForce(Vector3.up * jumpHeight, ForceMode.Impulse);
+            }
+        
     }
 }
